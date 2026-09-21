@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /family/*/vault
+
+Sitemap: https://familyos.app/sitemap.xml

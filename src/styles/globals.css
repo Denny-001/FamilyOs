@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-surface text-onSurface antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  *:focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-surface;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-xl
+           bg-primary text-onPrimary font-medium
+           hover:bg-primary/90 active:scale-[0.98] transition;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-xl
+           bg-secondary-container text-onSecondary-container font-medium
+           hover:bg-secondary-container/80 transition;
+  }
+  .card {
+    @apply bg-surface-container rounded-2xl p-4 shadow-sm;
+  }
+  .input {
+    @apply w-full rounded-xl border border-outline-variant bg-surface
+           px-4 py-2.5 text-base placeholder:text-onSurface-variant/60
+           focus:border-primary focus:ring-1 focus:ring-primary outline-none;
+  }
+}@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-surface text-onSurface antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  *:focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-surface;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-xl
+           bg-primary text-onPrimary font-medium
+           hover:bg-primary/90 active:scale-[0.98] transition;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-xl
+           bg-secondary-container text-onSecondary-container font-medium
+           hover:bg-secondary-container/80 transition;
+  }
+  .card {
+    @apply bg-surface-container rounded-2xl p-4 shadow-sm;
+  }
+  .input {
+    @apply w-full rounded-xl border border-outline-variant bg-surface
+           px-4 py-2.5 text-base placeholder:text-onSurface-variant/60
+           focus:border-primary focus:ring-1 focus:ring-primary outline-none;
+  }
+}
