@@ -1,0 +1,25 @@
+{
+  "name": "@familyos/scripts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "seed": "tsx seed.ts",
+    "seed:reset": "tsx seed.ts --reset",
+    "cleanup": "tsx cleanup.ts",
+    "cleanup:all": "tsx cleanup.ts --all",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@familyos/shared": "*",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "mongoose": "^8.4.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20.12.12",
+    "tsx": "^4.10.5",
+    "typescript": "^5.4.5"
+  }
+}
