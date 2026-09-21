@@ -1,0 +1,383 @@
+
+### 📄 `docs/api/postman_collection.json`
+
+```json
+{
+  "info": {
+    "name": "FamilyOS API",
+    "description": "Postman collection for the FamilyOS backend. Set `baseUrl` in collection variables. Login first — the collection auto-captures the access token.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api/v1" },
+    { "key": "accessToken", "value": "" },
+    { "key": "familyId", "value": "" },
+    { "key": "eventId", "value": "" },
+    { "key": "postId", "value": "" },
+    { "key": "taskId", "value": "" },
+    { "key": "contributionId", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// No-op; individual requests override as needed."
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-capture access token from auth responses",
+          "if (pm.response.code === 200 || pm.response.code === 201) {",
+          "  const body = pm.response.json();",
+          "  if (body?.data?.accessToken) pm.collectionVariables.set('accessToken', body.data.accessToken);",
+          "  if (body?.data?._id && pm.info.requestName === 'Create Family') pm.collectionVariables.set('familyId', body.data._id);",
+          "  if (body?.data?._id && pm.info.requestName === 'Create Event') pm.collectionVariables.set('eventId', body.data._id);",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Grace Mwangi\",\n  \"phone\": \"+254700000001\",\n  \"password\": \"Password123!\",\n  \"email\": \"grace@familyos.dev\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (body?.data?.accessToken) pm.collectionVariables.set('accessToken', body.data.accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+254700000001\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Refresh",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/auth/refresh", "host": ["{{baseUrl}}"], "path": ["auth", "refresh"] }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/auth/logout", "host": ["{{baseUrl}}"], "path": ["auth", "logout"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Families",
+      "item": [
+        {
+          "name": "Create Family",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (body?.data?._id) pm.collectionVariables.set('familyId', body.data._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"The Mwangi Family\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/families", "host": ["{{baseUrl}}"], "path": ["families"] }
+          }
+        },
+        {
+          "name": "Get Family",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/families/{{familyId}}", "host": ["{{baseUrl}}"], "path": ["families", "{{familyId}}"] }
+          }
+        },
+        {
+          "name": "Update Family",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{ \"name\": \"The Mwangi Family (updated)\" }" },
+            "url": { "raw": "{{baseUrl}}/families/{{familyId}}", "host": ["{{baseUrl}}"], "path": ["families", "{{familyId}}"] }
+          }
+        },
+        {
+          "name": "List Members",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/families/{{familyId}}/members", "host": ["{{baseUrl}}"], "path": ["families", "{{familyId}}", "members"] }
+          }
+        },
+        {
+          "name": "Generate Invite",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{ \"role\": \"adult\", \"expiresInDays\": 14 }" },
+            "url": { "raw": "{{baseUrl}}/families/{{familyId}}/invites", "host": ["{{baseUrl}}"], "path": ["families", "{{familyId}}", "invites"] }
+          }
+        },
+        {
+          "name": "Join via Code",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{ \"relationship\": \"Cousin\" }" },
+            "url": { "raw": "{{baseUrl}}/families/join/ABCD1234", "host": ["{{baseUrl}}"], "path": ["families", "join", "ABCD1234"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Feed",
+      "item": [
+        {
+          "name": "List Posts",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/families/{{familyId}}/posts?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["families", "{{familyId}}", "posts"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (body?.data?._id) pm.collectionVariables.set('postId', body.data._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"announcement\",\n  \"content\": \"Family reunion on the 21st!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/families/{{familyId}}/posts", "host": ["{{baseUrl}}"], "path": ["families", "{{familyId}}", "posts"] }
+          }
+        },
+        {
+          "name": "Add Comment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{ \"content\": \"Can't wait!\" }" },
+            "url": { "raw": "{{baseUrl}}/families/{{familyId}}/posts/{{postId}}/comments", "host": ["{{baseUrl}}"], "path": ["families", "{{familyId}}", "posts", "{{postId}}", "comments"] }
+          }
+        },
+        {
+          "name": "React to Post",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{ \"type\": \"love\" }" },
+            "url": { "raw": "{{baseUrl}}/families/{{familyId}}/posts/{{postId}}/reactions", "host": ["{{baseUrl}}"], "path": ["families", "{{familyId}}", "posts", "{{postId}}", "reactions"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Events",
+      "item": [
+        {
+          "name": "List Events",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/families/{{familyId}}/events", "host": ["{{baseUrl}}"], "path": ["families", "{{familyId}}", "events"] }
+          }
+        },
+        {
+          "name": "Create Event",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (body?.data?._id) pm.collectionVariables.set('eventId', body.data._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Mum's 55th Birthday Reunion\",\n  \"type\": \"birthday\",\n  \"startDate\": \"2026-06-21T14:00:00.000Z\",\n  \"location\": { \"name\": \"Karen Homestead\" },\n  \"contributionTarget\": 60000,\n  \"currency\": \"KES\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/families/{{familyId}}/events", "host": ["{{baseUrl}}"], "path": ["families", "{{familyId}}", "events"] }
+          }
+        },
+        {
+          "name": "RSVP",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{ \"status\": \"yes\", \"guestCount\": 2 }" },
+            "url": { "raw": "{{baseUrl}}/events/{{eventId}}/rsvp", "host": ["{{baseUrl}}"], "path": ["events", "{{eventId}}", "rsvp"] }
+          }
+        },
+        {
+          "name": "Attendees",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/events/{{eventId}}/attendees", "host": ["{{baseUrl}}"], "path": ["events", "{{eventId}}", "attendees"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "item": [
+        {
+          "name": "List Tasks",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/families/{{familyId}}/tasks", "host": ["{{baseUrl}}"], "path": ["families", "{{familyId}}", "tasks"] }
+          }
+        },
+        {
+          "name": "Create Task",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Book cake\",\n  \"assignedTo\": [\"<userId>\"],\n  \"dueDate\": \"2026-06-15T10:00:00.000Z\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/families/{{familyId}}/tasks", "host": ["{{baseUrl}}"], "path": ["families", "{{familyId}}", "tasks"] }
+          }
+        },
+        {
+          "name": "Update Task",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{ \"status\": \"done\" }" },
+            "url": { "raw": "{{baseUrl}}/tasks/{{taskId}}", "host": ["{{baseUrl}}"], "path": ["tasks", "{{taskId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Contributions",
+      "item": [
+        {
+          "name": "Set Event Contributions",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{ \"amountExpected\": 10000 }" },
+            "url": { "raw": "{{baseUrl}}/families/{{familyId}}/events/{{eventId}}/contributions", "host": ["{{baseUrl}}"], "path": ["families", "{{familyId}}", "events", "{{eventId}}", "contributions"] }
+          }
+        },
+        {
+          "name": "List Contributions",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/families/{{familyId}}/events/{{eventId}}/contributions", "host": ["{{baseUrl}}"], "path": ["families", "{{familyId}}", "events", "{{eventId}}", "contributions"] }
+          }
+        },
+        {
+          "name": "Initiate Payment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{ \"contributionId\": \"{{contributionId}}\", \"provider\": \"mpesa\", \"phone\": \"+254712345678\" }" },
+            "url": { "raw": "{{baseUrl}}/payments/initiate", "host": ["{{baseUrl}}"], "path": ["payments", "initiate"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Vault",
+      "item": [
+        {
+          "name": "List Documents",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/families/{{familyId}}/vault", "host": ["{{baseUrl}}"], "path": ["families", "{{familyId}}", "vault"] }
+          }
+        },
+        {
+          "name": "Register Document",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{ \"fileUrl\": \"https://res.cloudinary.com/demo/image/upload/sample.pdf\", \"fileName\": \"title-deed.pdf\", \"category\": \"legal\", \"accessLevel\": \"admin\" }" },
+            "url": { "raw": "{{baseUrl}}/families/{{familyId}}/vault", "host": ["{{baseUrl}}"], "path": ["families", "{{familyId}}", "vault"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "List Notifications",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/notifications", "host": ["{{baseUrl}}"], "path": ["notifications"] }
+          }
+        }
+      ]
+    }
+  ]
+}
