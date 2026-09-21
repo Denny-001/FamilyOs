@@ -1,0 +1,22 @@
+# Default owner for everything
+*                       @cincreatives
+
+# API surface — must be reviewed by backend lead
+/server/                @cincreatives
+/shared/types/          @cincreatives
+
+# Client UI — frontend lead
+/client/                @cincreatives
+
+# Deploy & CI — require explicit review
+/.github/workflows/     @cincreatives
+/docs/DEPLOYMENT.md     @cincreatives
+
+# Auth & payment code — treat as high-risk
+/server/src/controllers/auth/            @cincreatives
+/server/src/controllers/contributions/   @cincreatives
+/server/src/services/payment/            @cincreatives
+/server/src/middlewares/                 @cincreatives
+
+# Vault — sensitive data paths
+/server/src/controllers/vault/           @cincreatives

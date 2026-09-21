@@ -1,0 +1,69 @@
+version: 2
+updates:
+  # ─── Root workspace ─────────────────────────────────────
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '04:00'
+      timezone: Africa/Nairobi
+    open-pull-requests-limit: 5
+    versioning-strategy: increase
+    labels: [dependencies, chore]
+    commit-message:
+      prefix: 'chore(deps)'
+      prefix-development: 'chore(deps-dev)'
+    groups:
+      # Bundle all minor+patch bumps of the same stack into one PR
+      react:
+        patterns: ['react', 'react-dom', 'react-router-dom', '@types/react*']
+        update-types: [minor, patch]
+      tanstack:
+        patterns: ['@tanstack/*']
+        update-types: [minor, patch]
+      tailwind:
+        patterns: ['tailwindcss', 'postcss', 'autoprefixer']
+        update-types: [minor, patch]
+      typescript:
+        patterns: ['typescript', 'tsx', 'ts-node']
+        update-types: [minor, patch]
+      vitest:
+        patterns: ['vitest', '@vitest/*']
+        update-types: [minor, patch]
+
+  # ─── Client ─────────────────────────────────────────────
+  - package-ecosystem: npm
+    directory: /client
+    schedule:
+      interval: weekly
+    labels: [dependencies, client]
+    commit-message:
+      prefix: 'chore(client)'
+
+  # ─── Server ─────────────────────────────────────────────
+  - package-ecosystem: npm
+    directory: /server
+    schedule:
+      interval: weekly
+    labels: [dependencies, server]
+    commit-message:
+      prefix: 'chore(server)'
+
+  # ─── Shared ─────────────────────────────────────────────
+  - package-ecosystem: npm
+    directory: /shared
+    schedule:
+      interval: weekly
+    labels: [dependencies, shared]
+    commit-message:
+      prefix: 'chore(shared)'
+
+  # ─── GitHub Actions ─────────────────────────────────────
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    labels: [dependencies, ci]
+    commit-message:
+      prefix: 'chore(ci)'

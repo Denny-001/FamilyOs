@@ -1,0 +1,101 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # manual trigger from the Actions tab
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false # never cancel a deploy mid-flight
+
+jobs:
+  # ─── Gate: only deploy if tests pass ──────────────────────
+  verify:
+    name: Verify (lint + test)
+    uses: ./.github/workflows/test.yml
+
+  # ─── Deploy API (Render) ──────────────────────────────────
+  deploy-api:
+    name: Deploy API → Render
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: https://api.familyos.app
+
+    steps:
+      - name: Trigger Render deploy hook
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "::warning::RENDER_DEPLOY_HOOK not configured — skipping API deploy"
+            exit 0
+          fi
+          curl -fsSL -X POST "$HOOK"
+
+      - name: Wait for API health
+        run: |
+          for i in {1..30}; do
+            if curl -fsSL https://api.familyos.app/health | grep -q '"status":"ok"'; then
+              echo "✓ API healthy"
+              exit 0
+            fi
+            echo "Waiting for API… ($i/30)"
+            sleep 10
+          done
+          echo "::error::API failed to become healthy within 5 minutes"
+          exit 1
+
+  # ─── Deploy Client (Vercel) ───────────────────────────────
+  deploy-client:
+    name: Deploy Client → Vercel
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: https://familyos.app
+
+    steps:
+      - name: Trigger Vercel deploy hook
+        env:
+          HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "::warning::VERCEL_DEPLOY_HOOK not configured — skipping client deploy"
+            exit 0
+          fi
+          curl -fsSL -X POST "$HOOK"
+
+  # ─── Post-deploy smoke test ───────────────────────────────
+  smoke:
+    name: Post-deploy smoke test
+    needs: [deploy-api, deploy-client]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: API health check
+        run: curl -fsSL https://api.familyos.app/health
+
+      - name: Client loads
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://familyos.app)
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::Client returned $STATUS"
+            exit 1
+          fi
+          echo "✓ Client returned 200"
+
+      - name: Notify Slack on failure
+        if: failure()
+        env:
+          WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then exit 0; fi
+          curl -fsSL -X POST -H 'Content-type: application/json' \
+            --data '{"text":"🚨 FamilyOS deploy smoke test failed on main"}' \
+            "$WEBHOOK"
