@@ -1,0 +1,22 @@
+openapi: 3.1.0
+info:
+  title: FamilyOS API
+  version: 1.0.0
+  description: |
+    REST API for FamilyOS — a private family coordination platform.
+
+    ## Authentication
+    All routes except `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`,
+    and webhooks require a **Bearer JWT** in the `Authorization` header.
+
+    Access tokens are short-lived (15 min). Refresh tokens are stored in an
+    `httpOnly` cookie named `refreshToken` and rotate on every refresh.
+
+    ## Multi-tenancy
+    Every tenant-scoped route carries a `familyId` (in the path or body).
+    A `loadMembership` middleware validates the caller's role before the handler runs.
+
+    ## Error format
+    All errors follow a consistent envelope:
+    ```json
+    { "success": false, "error": "Human-readable message", "data": [/* optional details */] }
